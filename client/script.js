@@ -5,12 +5,15 @@ const form = document.querySelector("form");
 const chatContainer = document.querySelector("#chat_container");
 
 let loadInterval;
+
 function loader(element) {
   element.textContent = "";
-  // update the text content of the loading indicator
+
   loadInterval = setInterval(() => {
+    // Update the text content of the loading indicator
     element.textContent += ".";
-    // if the loading indicator has reached three dots, reset it
+
+    // If the loading indicator has reached three dots, reset it
     if (element.textContent === "....") {
       element.textContent = "";
     }
@@ -19,6 +22,7 @@ function loader(element) {
 
 function typeText(element, text) {
   let index = 0;
+
   let interval = setInterval(() => {
     if (index < text.length) {
       element.innerHTML += text.charAt(index);
@@ -33,11 +37,11 @@ function typeText(element, text) {
 // necessary for typing text effect for that specific reply
 // without unique ID, typing text will work on every element
 function generateUniqueId() {
-  const timeStamp = Date.now();
+  const timestamp = Date.now();
   const randomNumber = Math.random();
   const hexadecimalString = randomNumber.toString(16);
 
-  return `id-${timeStamp}-${hexadecimalString}`;
+  return `id-${timestamp}-${hexadecimalString}`;
 }
 
 function chatStripe(isAi, value, uniqueId) {
@@ -46,14 +50,14 @@ function chatStripe(isAi, value, uniqueId) {
             <div class="chat">
                 <div class="profile">
                     <img 
-                        src="${isAi ? bot : user}"
-                        alt="${isAi ? "bot" : "user"}"
+                      src=${isAi ? bot : user} 
+                      alt="${isAi ? "bot" : "user"}" 
                     />
                 </div>
-                <div class="message" id=${uniqueId}> ${value} </div>
+                <div class="message" id=${uniqueId}>${value}</div>
             </div>
         </div>
-        `;
+    `;
 }
 
 const handleSubmit = async (e) => {
@@ -61,26 +65,25 @@ const handleSubmit = async (e) => {
 
   const data = new FormData(form);
 
-  //genrating user chat stripe
+  // user's chatstripe
   chatContainer.innerHTML += chatStripe(false, data.get("prompt"));
 
-  // tp clear the text area input
+  // to clear the textarea input
   form.reset();
 
-  //bot chat Stripe
+  // bot's chatstripe
   const uniqueId = generateUniqueId();
   chatContainer.innerHTML += chatStripe(true, " ", uniqueId);
 
-  // to fucur scroll to the bottom
+  // to focus scroll to the bottom
   chatContainer.scrollTop = chatContainer.scrollHeight;
 
-  // specify message div
+  // specific message div
   const messageDiv = document.getElementById(uniqueId);
 
   // messageDiv.innerHTML = "..."
   loader(messageDiv);
 
-  //fetch data from server -> bot's response
   const response = await fetch("https://chatbot-server-s58d.onrender.com/", {
     method: "POST",
     headers: {
@@ -92,18 +95,17 @@ const handleSubmit = async (e) => {
   });
 
   clearInterval(loadInterval);
-
   messageDiv.innerHTML = " ";
 
   if (response.ok) {
     const data = await response.json();
-    const parsedData = data.bot.trim(); // trims any trailling spaces/ '\n'
+    const parsedData = data.bot.trim(); // trims any trailing spaces '\n'
 
     typeText(messageDiv, parsedData);
   } else {
     const err = await response.text();
 
-    messageDiv.innerHTML = "Somethin went wrong";
+    messageDiv.innerHTML = "Something went wrong";
     console.log(err);
   }
 };
